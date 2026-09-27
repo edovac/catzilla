@@ -136,6 +136,27 @@ The shelter has no Google Workspace licence, only personal Google accounts (@gma
 * In *Testing* status, only listed test users (up to 100) can log in. That's enough for a small group, or the app can be published to *In production*.
 * Which volunteers can use the app is still decided by the app's own `users` table, managed by the administrator. Google only proves who the person is.
 
+# Several shelters
+
+Other shelters may want to use CatZilla. Each shelter gets **its own deployment** from the same repository. The app stays single-tenant: there is no organization concept in the code or in the database.
+
+What each shelter gets:
+* Its own Worker and D1 database (created with the `eu` jurisdiction).
+* Its own Google OAuth client, in *Testing* status with its volunteers listed as test users (up to 100).
+* Its own first administrator (`ADMIN_EMAIL`) and its own backup job.
+
+Ideally these live in accounts owned by the shelter (Cloudflare, Google Cloud, GitHub), with the maintainer added as a collaborator. The data then belongs to the shelter, each shelter has its own free-tier limits, and the maintainer doesn't become a data processor for several organizations.
+
+Consequences:
+* Deployment is a parameterized script: one command creates the D1 database, applies migrations and deploys for a given shelter.
+* Every release, migrations included, is rolled out to each deployment.
+* The code contains nothing specific to one shelter. Values like the shelter's name come from configuration.
+* Google login identifies users by the Google `sub`, not only by email. Optionally, tokens with an `hd` claim (Workspace accounts) are rejected, so only personal accounts are used.
+
+Alternatives considered and rejected:
+* **Shared database with an `org_id` column on every table.** Estimated at 5–8 days of development on top of Google login: memberships and invitations, rebuilt tables and audit triggers, a shelter filter on every query, and isolation tests. A single missed filter would expose one shelter's data to another. It also requires publishing the OAuth client *In production* (with a privacy policy and, preferably, a custom domain), makes the maintainer a GDPR processor for every shelter, and makes restoring a single shelter's data harder.
+* **One database per shelter behind a single deployment.** Queries stay the same, but routing, bindings and migrations across many databases add infrastructure complexity, and the D1 free plan limits the number of databases.
+
 # Local proof of concept
 
 Before choosing the deployment environment, we build a POC that runs locally.
@@ -160,3 +181,4 @@ Before choosing the deployment environment, we build a POC that runs locally.
 | 2026-09-27 | Proposed: Option B, revised | Pending confirmation. |
 | 2026-09-27 | Build a local POC first (Node + SQLite + Hono + Drizzle + React) | Validate the app before committing to a deployment environment. The stack is portable to Option B. |
 | 2026-09-27 | Audit history via SQLite triggers | Recorded by the database itself, as the requirements prefer. The acting user comes from each row's `updated_by`, so no session context is needed. Portable to D1. |
+| 2026-09-27 | Several shelters: one single-tenant deployment each | No code changes, full isolation, still free. A shared multi-tenant database would cost 5–8 days of development plus GDPR and operational duties. See *Several shelters*. |
