@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { api, paymentMethods, type Donation, type DonationInput, type PaymentMethod } from '../api';
 import { DeletedBanner, ErrorBox, Loading, PageHeader } from '../components';
 import { centsToInput, parseEuro, today } from '../format';
 import { useSave } from '../hooks';
+import type { BackState } from './EntriesPage';
 
 export function DonationFormPage() {
   const id = useParams().id;
   const navigate = useNavigate();
+  const back = (useLocation().state as BackState | null)?.back ?? '/movimenti?tipo=donazioni';
   const existing = useQuery({
     queryKey: ['donation', id],
     queryFn: () => api.get<Donation>(`/donations/${id}`),
@@ -45,7 +47,7 @@ export function DonationFormPage() {
     setFormError('');
     save.mutate(
       { date, amountCents, donor, paymentMethod, notes },
-      { onSuccess: () => navigate('/movimenti?tipo=donazioni') },
+      { onSuccess: () => navigate(back) },
     );
   };
 

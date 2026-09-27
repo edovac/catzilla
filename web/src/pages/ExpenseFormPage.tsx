@@ -1,14 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { api, type Expense, type ExpenseInput } from '../api';
 import { DeletedBanner, ErrorBox, Loading, PageHeader } from '../components';
 import { centsToInput, parseEuro, today } from '../format';
 import { useCategories, useCats, useSave } from '../hooks';
+import type { BackState } from './EntriesPage';
 
 export function ExpenseFormPage() {
   const id = useParams().id;
   const navigate = useNavigate();
+  const back = (useLocation().state as BackState | null)?.back ?? '/movimenti?tipo=spese';
   const existing = useQuery({
     queryKey: ['expense', id],
     queryFn: () => api.get<Expense>(`/expenses/${id}`),
@@ -65,7 +67,7 @@ export function ExpenseFormPage() {
         supplier,
         notes,
       },
-      { onSuccess: () => navigate('/movimenti?tipo=spese') },
+      { onSuccess: () => navigate(back) },
     );
   };
 

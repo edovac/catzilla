@@ -280,3 +280,4 @@ tfoot td { font-weight: 600; border-bottom: none; }
 .changes dd { margin: 0; overflow-wrap: anywhere; }
 .changes del { color: var(--text-2); }
 .row-actions .button { min-height: 2.2rem; padding: 0.2rem 0.6rem; font-size: 0.85rem; }
+.stats + .list, .stats + p { margin-top: 1rem; }
