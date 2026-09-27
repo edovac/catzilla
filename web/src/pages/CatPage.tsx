@@ -29,7 +29,12 @@ export function CatPage() {
     <>
       <PageHeader
         title={cat.name}
-        action={<button onClick={() => setEditing(!editing)}>{editing ? 'Chiudi' : 'Modifica'}</button>}
+        action={
+          <div className="row-actions">
+            <Link className="button" to={`/storico/cat/${cat.id}`}>Storico</Link>
+            <button onClick={() => setEditing(!editing)}>{editing ? 'Chiudi' : 'Modifica'}</button>
+          </div>
+        }
       />
       {cat.archivedAt && <p className="banner">Archiviato: non viene proposto per le nuove spese.</p>}
       {cat.notes && !editing && <p className="muted">{cat.notes}</p>}
@@ -37,7 +42,7 @@ export function CatPage() {
       {editing && (
         <div className="stack">
           <button onClick={() => archive.mutate(!cat.archivedAt)} disabled={archive.isPending}>
-            {cat.archivedAt ? 'Ripristina' : 'Archivia (adottato, deceduto…)'}
+            {cat.archivedAt ? 'Ripristina' : 'Archivia'}
           </button>
           <ErrorBox error={archive.error} />
         </div>

@@ -33,8 +33,6 @@ export const periodQuery = z.object({
   to: isoDate.optional(),
 });
 
-export const nowIso = () => new Date().toISOString();
-
 // zValidator that reports errors as { error, issues } with status 400.
 export const validate = <T extends z.ZodType, Target extends keyof ValidationTargets>(
   target: Target,

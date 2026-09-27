@@ -7,6 +7,7 @@ import { CatsPage } from './pages/CatsPage';
 import { DonationFormPage } from './pages/DonationFormPage';
 import { EntriesPage } from './pages/EntriesPage';
 import { ExpenseFormPage } from './pages/ExpenseFormPage';
+import { HistoryPage } from './pages/HistoryPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { MorePage } from './pages/MorePage';
@@ -45,6 +46,7 @@ export function App() {
           <Route path="/report" element={<ReportPage />} />
           <Route path="/gatti" element={<CatsPage />} />
           <Route path="/gatti/:id" element={<CatPage />} />
+          <Route path="/storico/:entity/:id" element={<HistoryPage />} />
           <Route path="/categorie" element={<CategoriesPage />} />
           <Route path="/impostazioni" element={<SettingsPage />} />
           <Route path="/altro" element={<MorePage />} />

@@ -103,3 +103,23 @@ export const settings = sqliteTable(
   },
   (t) => [check('settings_single_row', sql`${t.id} = 1`)],
 );
+
+// Written only by the triggers in drizzle/0002_audit_triggers.sql, never by the app.
+export const auditEntityTypes = ['donation', 'expense', 'category', 'cat'] as const;
+export type AuditEntityType = (typeof auditEntityTypes)[number];
+export const auditActions = ['create', 'update', 'delete', 'restore', 'archive'] as const;
+
+export const auditLog = sqliteTable(
+  'audit_log',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    entityType: text('entity_type', { enum: auditEntityTypes }).notNull(),
+    entityId: integer('entity_id').notNull(),
+    action: text('action', { enum: auditActions }).notNull(),
+    userId: integer('user_id').references(() => users.id), // null for seed data
+    at: text('at').notNull(),
+    oldValues: text('old_values', { mode: 'json' }).$type<Record<string, unknown>>(),
+    newValues: text('new_values', { mode: 'json' }).$type<Record<string, unknown>>().notNull(),
+  },
+  (t) => [index('audit_log_entity_idx').on(t.entityType, t.entityId)],
+);

@@ -258,3 +258,25 @@ tfoot td { font-weight: 600; border-bottom: none; }
   th, td { padding: 0.5rem 0.5rem; }
   th:first-child, td:first-child { padding-left: 0.75rem; }
 }
+
+/* History timeline */
+.timeline { list-style: none; margin: 0; padding: 0 0 0 1rem; border-left: 2px solid var(--border); }
+.timeline li { position: relative; padding: 0 0 1.2rem 0.4rem; }
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: calc(-1rem - 6px);
+  top: 0.35rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+}
+.timeline p { margin: 0 0 0.3rem; }
+.changes { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.2rem 0.8rem; font-size: 0.9rem; }
+.changes > div { display: contents; }
+.changes dt { color: var(--text-2); }
+.changes dd { margin: 0; overflow-wrap: anywhere; }
+.changes del { color: var(--text-2); }
+.row-actions .button { min-height: 2.2rem; padding: 0.2rem 0.6rem; font-size: 0.85rem; }

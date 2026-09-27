@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
 import { api, type Category } from '../api';
 import { ErrorBox, Loading, PageHeader } from '../components';
 import { useCategories, useSave } from '../hooks';
@@ -69,6 +70,7 @@ function CategoryRow({ category: c }: { category: Category }) {
             {c.archivedAt && <span className="muted">archiviata</span>}
           </div>
           <div className="row-actions">
+            <Link className="button" to={`/storico/category/${c.id}`}>Storico</Link>
             <button onClick={() => setEditing(true)}>Rinomina</button>
             <button onClick={() => archive.mutate(!c.archivedAt)} disabled={archive.isPending}>
               {c.archivedAt ? 'Ripristina' : 'Archivia'}

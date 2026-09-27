@@ -84,6 +84,17 @@ export interface CatReport {
   totalCents: number;
 }
 
+export type HistoryEntity = 'donation' | 'expense' | 'category' | 'cat';
+
+export interface HistoryEvent {
+  id: number;
+  action: 'create' | 'update' | 'delete' | 'restore' | 'archive';
+  at: string;
+  user: { id: number; name: string } | null; // null: created by the system (seed)
+  // Expense category/cat changes arrive as names in fields 'category' and 'cat'.
+  changes: { field: string; old: unknown; new: unknown }[];
+}
+
 export class ApiError extends Error {
   constructor(
     readonly status: number,

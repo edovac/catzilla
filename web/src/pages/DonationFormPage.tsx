@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { api, paymentMethods, type Donation, type DonationInput, type PaymentMethod } from '../api';
 import { DeletedBanner, ErrorBox, Loading, PageHeader } from '../components';
 import { centsToInput, parseEuro, today } from '../format';
@@ -55,7 +55,10 @@ export function DonationFormPage() {
 
   return (
     <>
-      <PageHeader title={id ? 'Donazione' : 'Nuova donazione'} />
+      <PageHeader
+        title={id ? 'Donazione' : 'Nuova donazione'}
+        action={id && <Link className="button" to={`/storico/donation/${id}`}>Storico</Link>}
+      />
       {deleted && <DeletedBanner onRestore={() => restore.mutate(undefined)} busy={restore.isPending} />}
       <form className="form" onSubmit={submit}>
         <fieldset disabled={deleted}>

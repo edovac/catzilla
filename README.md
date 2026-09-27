@@ -4,8 +4,8 @@ Accounting app for a volunteer cat shelter. See [docs/requirements.md](docs/requ
 [docs/technology-choices.md](docs/technology-choices.md).
 
 This is the **local proof of concept**: Node + SQLite, Hono API, Drizzle ORM, React + Vite front end.
-Login is a fake dev login (pick a user, no password). Audit history, Google login, deployment and
-backup are not implemented yet.
+Login is a fake dev login (pick a user, no password). Google login, deployment and backup are not
+implemented yet.
 
 ## Run
 
@@ -48,7 +48,9 @@ web/               React + Vite single-page app (Italian UI)
 - Amounts are integer cents (EUR); dates are `YYYY-MM-DD`.
 - Nothing is hard-deleted. Entries have `deleted_at`, categories and cats have `archived_at`,
   users have `enabled`.
-- Every row records `created_by` / `updated_by`, ready for the audit history.
+- Every row records `created_by` / `updated_by`. SQLite triggers
+  (`server/drizzle/0002_audit_triggers.sql`) copy every change to donations, expenses, categories
+  and cats into `audit_log`, shown in the app as "Storico".
 
 ## Dependency notes
 

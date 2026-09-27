@@ -4,17 +4,18 @@ import { z } from 'zod';
 import type { Db } from '../db/client.js';
 import { cats } from '../db/schema.js';
 import type { AuthEnv } from '../lib/auth.js';
-import { idParam, notFound, nowIso, optionalText, requiredText, validate } from '../lib/validation.js';
+import { created, nowIso, updated } from '../lib/tracking.js';
+import { idParam, notFound, optionalText, requiredText, validate } from '../lib/validation.js';
 
 const input = z.object({ name: requiredText(100), notes: optionalText() });
 
-// Cats are never deleted: archived ones (adopted, deceased) are hidden from new expenses only.
+// Cats are never deleted: archived ones are hidden from new expenses only.
 export const catRoutes = (db: Db) => {
   const setArchived = (id: number, userId: number, archived: boolean) => {
     const now = nowIso();
     const row = db
       .update(cats)
-      .set({ archivedAt: archived ? now : null, updatedBy: userId, updatedAt: now })
+      .set({ archivedAt: archived ? now : null, ...updated(userId, now) })
       .where(eq(cats.id, id))
       .returning()
       .get();
@@ -28,7 +29,7 @@ export const catRoutes = (db: Db) => {
       const me = c.var.user.id;
       const row = db
         .insert(cats)
-        .values({ ...c.req.valid('json'), createdBy: me, updatedBy: me })
+        .values({ ...c.req.valid('json'), ...created(me) })
         .returning()
         .get();
       return c.json(row, 201);
@@ -36,7 +37,7 @@ export const catRoutes = (db: Db) => {
     .patch('/:id', validate('param', idParam), validate('json', input), (c) => {
       const row = db
         .update(cats)
-        .set({ ...c.req.valid('json'), updatedBy: c.var.user.id, updatedAt: nowIso() })
+        .set({ ...c.req.valid('json'), ...updated(c.var.user.id) })
         .where(eq(cats.id, c.req.valid('param').id))
         .returning()
         .get();

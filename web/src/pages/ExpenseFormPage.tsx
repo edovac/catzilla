@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState, type FormEvent } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { Link, useNavigate, useParams } from 'react-router';
 import { api, type Expense, type ExpenseInput } from '../api';
 import { DeletedBanner, ErrorBox, Loading, PageHeader } from '../components';
 import { centsToInput, parseEuro, today } from '../format';
@@ -76,7 +76,10 @@ export function ExpenseFormPage() {
 
   return (
     <>
-      <PageHeader title={id ? 'Spesa' : 'Nuova spesa'} />
+      <PageHeader
+        title={id ? 'Spesa' : 'Nuova spesa'}
+        action={id && <Link className="button" to={`/storico/expense/${id}`}>Storico</Link>}
+      />
       {deleted && <DeletedBanner onRestore={() => restore.mutate(undefined)} busy={restore.isPending} />}
       <form className="form" onSubmit={submit}>
         <fieldset disabled={deleted}>

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { Db } from '../db/client.js';
 import { categories, cats, expenses } from '../db/schema.js';
 import type { AuthEnv } from '../lib/auth.js';
+import { created, nowIso, updated } from '../lib/tracking.js';
 import { inPeriod } from '../lib/period.js';
 import {
   amountCents,
@@ -11,7 +12,6 @@ import {
   idParam,
   isoDate,
   notFound,
-  nowIso,
   optionalText,
   periodQuery,
   requiredText,
@@ -71,13 +71,13 @@ export const expenseRoutes = (db: Db) => {
 
   const setDeleted = (id: number, userId: number, deleted: boolean) => {
     const now = nowIso();
-    const updated = db
+    const row = db
       .update(expenses)
-      .set({ deletedAt: deleted ? now : null, updatedBy: userId, updatedAt: now })
+      .set({ deletedAt: deleted ? now : null, ...updated(userId, now) })
       .where(eq(expenses.id, id))
       .returning({ id: expenses.id })
       .get();
-    if (!updated) throw notFound();
+    if (!row) throw notFound();
     return find(id);
   };
 
@@ -104,7 +104,7 @@ export const expenseRoutes = (db: Db) => {
       const me = c.var.user.id;
       const { id } = db
         .insert(expenses)
-        .values({ ...data, createdBy: me, updatedBy: me })
+        .values({ ...data, ...created(me) })
         .returning({ id: expenses.id })
         .get();
       return c.json(find(id), 201);
@@ -116,7 +116,7 @@ export const expenseRoutes = (db: Db) => {
       if (current.deletedAt) throw conflict('Ripristina la spesa prima di modificarla');
       checkReferences(data, current);
       db.update(expenses)
-        .set({ ...data, updatedBy: c.var.user.id, updatedAt: nowIso() })
+        .set({ ...data, ...updated(c.var.user.id) })
         .where(eq(expenses.id, id))
         .run();
       return c.json(find(id));

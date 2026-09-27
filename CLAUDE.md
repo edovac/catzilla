@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 CatZilla is a mobile-first accounting web app for a small cat-shelter volunteer group (donations, expenses, categories, cats, balance, reports). The UI is in Italian and the only currency is EUR. Read `docs/requirements.md` for the use cases and `docs/technology-choices.md` for the stack decision and its status.
 
-The current code is a **local proof of concept**: Node + SQLite, a Hono API, Drizzle ORM, and a React + Vite SPA. Deliberately not built yet: audit history, Google login (a fake dev login stands in), deployment and backup. The likely deployment target is Cloudflare Workers + D1 (not confirmed yet), so keep server code portable. Hono and Drizzle were chosen because they run on both Node and Workers/D1. Don't add Node-only dependencies to request-handling code; Node specifics belong in `server/src/index.ts` and `server/src/db/client.ts`.
+The current code is a **local proof of concept**: Node + SQLite, a Hono API, Drizzle ORM, and a React + Vite SPA. Deliberately not built yet: Google login (a fake dev login stands in), deployment and backup. The likely deployment target is Cloudflare Workers + D1 (not confirmed yet), so keep server code portable. Hono and Drizzle were chosen because they run on both Node and Workers/D1. Don't add Node-only dependencies to request-handling code; Node specifics belong in `server/src/index.ts` and `server/src/db/client.ts`.
 
 ## Commands
 
@@ -49,7 +49,10 @@ The dev database is `server/catzilla.db` (gitignored). Delete it to start fresh;
 - Amounts are **integer cents** everywhere in the API and database. The UI converts with `parseEuro` and `formatEuro` in `web/src/format.ts`, which accept Italian input such as `1.234,56`. Dates are `YYYY-MM-DD` strings; timestamps are ISO strings.
 - **Nothing is hard-deleted.** Donations and expenses have `deleted_at`: they are excluded from balance and reports, can be restored, and cannot be edited while deleted. Categories and cats have `archived_at`. Users have `enabled`, and there must always be at least one enabled admin (checked inside the update transaction in `routes/users.ts`).
 - An archived category or cat can't be chosen for a new expense, but an existing expense keeps the one it already has. `checkReferences` in `routes/expenses.ts` enforces this, and the expense form filters its options the same way.
-- Every table has `created_by`/`updated_by`/`created_at`/`updated_at`, and every write must set `updatedBy`/`updatedAt`. These columns are the foundation for the audit history still to be built, which must record who, when, and the before and after values for donations, expenses, categories and cats.
+- **Audit history is written by SQLite triggers**, not by app code: `server/drizzle/0002_audit_triggers.sql` records every insert and update of donations, expenses, categories and cats in `audit_log`, as JSON snapshots using the API's camelCase field names. The action (create/update/delete/restore/archive) is derived from `deleted_at`/`archived_at`, and a save that changes no value creates no event. `routes/history.ts` turns snapshots into per-field changes and resolves expense category/cat ids to names.
+  - The triggers take the author from `created_by`/`updated_by`, so every write must set the tracking columns through `created(userId)` / `updated(userId)` from `server/src/lib/tracking.ts`. Never rely on SQLite defaults, and never call `new Date()` for them: `nowIso()` there is strictly increasing, and a guard trigger aborts any UPDATE that leaves `updated_at` unchanged.
+  - **Adding, removing or renaming a column in an audited table requires a new migration that drops and recreates that table's triggers** (they list the columns explicitly), plus the matching label in `web/src/pages/HistoryPage.tsx`.
+  - Users and the opening balance are not audited.
 - The balance is the opening balance (a single-row `settings` table, id = 1) + donations − expenses, counting only non-deleted entries.
 
 ## Tests

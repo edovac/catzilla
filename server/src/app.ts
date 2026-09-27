@@ -8,6 +8,7 @@ import { catRoutes } from './routes/cats.js';
 import { categoryRoutes } from './routes/categories.js';
 import { donationRoutes } from './routes/donations.js';
 import { expenseRoutes } from './routes/expenses.js';
+import { historyRoutes } from './routes/history.js';
 import { reportRoutes } from './routes/reports.js';
 import { settingsRoutes } from './routes/settings.js';
 import { userRoutes } from './routes/users.js';
@@ -26,7 +27,8 @@ export function createApp(db: Db, cfg: AppConfig) {
     .route('/donations', donationRoutes(db))
     .route('/expenses', expenseRoutes(db))
     .route('/settings', settingsRoutes(db))
-    .route('/reports', reportRoutes(db));
+    .route('/reports', reportRoutes(db))
+    .route('/history', historyRoutes(db));
 
   const app = new Hono()
     .route('/api/auth', authRoutes(db, cfg))

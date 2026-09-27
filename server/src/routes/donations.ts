@@ -4,6 +4,7 @@ import { z } from 'zod';
 import type { Db } from '../db/client.js';
 import { donations, paymentMethods } from '../db/schema.js';
 import type { AuthEnv } from '../lib/auth.js';
+import { created, nowIso, updated } from '../lib/tracking.js';
 import { inPeriod } from '../lib/period.js';
 import {
   amountCents,
@@ -11,7 +12,6 @@ import {
   idParam,
   isoDate,
   notFound,
-  nowIso,
   optionalText,
   periodQuery,
   validate,
@@ -38,7 +38,7 @@ export const donationRoutes = (db: Db) => {
     const now = nowIso();
     const row = db
       .update(donations)
-      .set({ deletedAt: deleted ? now : null, updatedBy: userId, updatedAt: now })
+      .set({ deletedAt: deleted ? now : null, ...updated(userId, now) })
       .where(eq(donations.id, id))
       .returning()
       .get();
@@ -67,7 +67,7 @@ export const donationRoutes = (db: Db) => {
       const me = c.var.user.id;
       const row = db
         .insert(donations)
-        .values({ ...c.req.valid('json'), createdBy: me, updatedBy: me })
+        .values({ ...c.req.valid('json'), ...created(me) })
         .returning()
         .get();
       return c.json(row, 201);
@@ -77,7 +77,7 @@ export const donationRoutes = (db: Db) => {
       if (find(id).deletedAt) throw conflict('Ripristina la donazione prima di modificarla');
       const row = db
         .update(donations)
-        .set({ ...c.req.valid('json'), updatedBy: c.var.user.id, updatedAt: nowIso() })
+        .set({ ...c.req.valid('json'), ...updated(c.var.user.id) })
         .where(eq(donations.id, id))
         .returning()
         .get();

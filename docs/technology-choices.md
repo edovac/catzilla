@@ -148,8 +148,9 @@ Before choosing the deployment environment, we build a POC that runs locally.
 | Data access | Drizzle ORM | Supports both SQLite on Node and D1, so the data layer is portable. |
 | Front end | React + Vite single-page app | Separate static app calling a JSON API. Can be hosted anywhere as static files. |
 | Login | Fake dev login (pick a user, no password) | Fastest to build. Google login is added later. |
-| Use cases in scope | Login + user management; donations and expenses (with categories and cats, archival, soft delete); balance and reports | Covers the core of the app. |
-| Out of scope | Audit history, Google login, deployment, backup | To be added after the POC. |
+| Use cases in scope | Login + user management; donations and expenses (with categories and cats, archival, soft delete); balance and reports; audit history | Covers the core of the app. |
+| Audit history | SQLite triggers write every change to an `audit_log` table | Enforced by the database, so no code path can skip it. D1 supports triggers, so it carries over to Option B. |
+| Out of scope | Google login, deployment, backup | To be added after the POC. |
 
 # Decision log
 
@@ -158,3 +159,4 @@ Before choosing the deployment environment, we build a POC that runs locally.
 | 2026-09-27 | Exclude Option E (Cloud Run) and Cloudflare Access | Both require a credit card. |
 | 2026-09-27 | Proposed: Option B, revised | Pending confirmation. |
 | 2026-09-27 | Build a local POC first (Node + SQLite + Hono + Drizzle + React) | Validate the app before committing to a deployment environment. The stack is portable to Option B. |
+| 2026-09-27 | Audit history via SQLite triggers | Recorded by the database itself, as the requirements prefer. The acting user comes from each row's `updated_by`, so no session context is needed. Portable to D1. |
