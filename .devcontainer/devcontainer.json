@@ -1,0 +1,26 @@
+{
+  "name": "catzilla",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:24",
+  "features": {
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+  "mounts": [
+    "source=catzilla-claude-config,target=/home/node/.claude,type=volume"
+  ],
+  "forwardPorts": [5173, 3000],
+  "portsAttributes": {
+    "5173": { "label": "web (Vite)" },
+    "3000": { "label": "api" }
+  },
+  "postCreateCommand": "sudo chown -R node:node /home/node/.claude",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}
